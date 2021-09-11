@@ -167,6 +167,7 @@ class IngestionManagerPandas:
 
     feature_group_name: str = attr.ib()
     sagemaker_fs_runtime_client_config: Config = attr.ib()
+    sagemaker_fs_runtime_client_endpoint_url: str = attr.ib()
     max_workers: int = attr.ib(default=1)
     max_processes: int = attr.ib(default=1)
     _async_result: AsyncResult = attr.ib(default=None)
@@ -178,6 +179,7 @@ class IngestionManagerPandas:
         data_frame: DataFrame,
         feature_group_name: str,
         client_config: Config,
+        client_endpoint_url: str,
         start_index: int,
         end_index: int,
     ) -> List[int]:
@@ -199,7 +201,7 @@ class IngestionManagerPandas:
             client_config = copy.deepcopy(client_config)
             client_config.retries = {"max_attempts": 10, "mode": "standard"}
         sagemaker_featurestore_runtime_client = boto3.Session().client(
-            service_name="sagemaker-featurestore-runtime", config=client_config
+            service_name="sagemaker-featurestore-runtime", config=client_config, endpoint_url=client_endpoint_url
         )
 
         logger.info("Started ingesting index %d to %d", start_index, end_index)
@@ -342,6 +344,7 @@ class IngestionManagerPandas:
                     start_index=start_index,
                     end_index=end_index,
                     client_config=sagemaker_fs_runtime_client_config,
+                    client_endpoint_url=self.sagemaker_fs_runtime_client_endpoint_url
                 )
             ] = (start_index + row_offset, end_index + row_offset)
 
@@ -613,6 +616,7 @@ class FeatureGroup:
         manager = IngestionManagerPandas(
             feature_group_name=self.name,
             sagemaker_fs_runtime_client_config=self.sagemaker_session.sagemaker_featurestore_runtime_client.meta.config,
+            sagemaker_fs_runtime_client_endpoint_url = self.sagemaker_session.sagemaker_featurestore_runtime_client._endpoint.host,
             max_workers=max_workers,
             max_processes=max_processes,
         )
