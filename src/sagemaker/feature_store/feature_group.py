@@ -344,7 +344,7 @@ class IngestionManagerPandas:
                     start_index=start_index,
                     end_index=end_index,
                     client_config=sagemaker_fs_runtime_client_config,
-                    client_endpoint_url=self.sagemaker_fs_runtime_client_endpoint_url
+                    client_endpoint_url=sagemaker_fs_runtime_client_endpoint_url
                 )
             ] = (start_index + row_offset, end_index + row_offset)
 
